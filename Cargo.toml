@@ -1,0 +1,16 @@
+[package]
+name = "zigcli"
+version = "0.0.1"
+authors = ["Gabriel Borrelli <borrelli.gabriel.pr@gmail.com>"]
+license = "MIT OR Apache-2.0"
+keywords = ["build-dependencies"]
+repository = "https://github.com/fimoengine/zigcli-rs"
+homepage = "https://github.com/fimoengine/zigcli-rs"
+documentation = "https://docs.rs/zigcli"
+description = """
+A build dependency for running `zig` to build a native library
+"""
+categories = ["development-tools::build-utils"]
+edition = "2021"
+
+[dependencies]
