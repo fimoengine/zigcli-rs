@@ -1,6 +1,6 @@
 [package]
 name = "zigcli"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Gabriel Borrelli <borrelli.gabriel.pr@gmail.com>"]
 license = "MIT OR Apache-2.0"
 keywords = ["build-dependencies"]
