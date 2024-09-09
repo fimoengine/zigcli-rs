@@ -486,7 +486,7 @@ impl Build {
             let (target, arch, _, _) = parse_target_triplet();
             self.target(target);
 
-            let features = std::iter::once(&*arch)
+            let features = std::iter::once("baseline")
                 .chain(getenv_unwrap("CARGO_CFG_TARGET_FEATURE").split(','))
                 .map(|feature| translate_arch_feature(&arch, feature))
                 .collect::<Vec<_>>()
