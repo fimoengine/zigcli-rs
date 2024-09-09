@@ -483,10 +483,7 @@ impl Build {
 
         // Determine the target and CPU features, if not specified.
         if self.target.is_none() && self.cpu.is_none() {
-            let arch = getenv_unwrap("CARGO_CFG_TARGET_ARCH");
-            let sys = getenv_unwrap("CARGO_CFG_TARGET_OS");
-            let abi = getenv_unwrap("CARGO_CFG_TARGET_ENV");
-            let target = format!("{}-{}-{}", arch, sys, abi);
+            let (target, arch, _, _) = parse_target_triplet();
             self.target(target);
 
             let features = std::iter::once(&*arch)
@@ -496,10 +493,7 @@ impl Build {
                 .join("+");
             self.cpu(features);
         } else if self.target.is_none() {
-            let arch = getenv_unwrap("CARGO_CFG_TARGET_ARCH");
-            let sys = getenv_unwrap("CARGO_CFG_TARGET_OS");
-            let abi = getenv_unwrap("CARGO_CFG_TARGET_ENV");
-            let target = format!("{}-{}-{}", arch, sys, abi);
+            let (target, _, _, _) = parse_target_triplet();
             self.target(target);
         }
 
@@ -760,6 +754,25 @@ fn getenv_unwrap(v: &str) -> String {
 
 fn fail(s: &str) -> ! {
     panic!("\n{}\n\nbuild failed, must exit now", s)
+}
+
+fn parse_target_triplet() -> (String, String, String, Option<String>) {
+    // Read the target from the environment variables.
+    let arch = getenv_unwrap("CARGO_CFG_TARGET_ARCH");
+    let sys = getenv_unwrap("CARGO_CFG_TARGET_OS");
+    let env = getenv_unwrap("CARGO_CFG_TARGET_ENV");
+    let abi = getenv_unwrap("CARGO_CFG_TARGET_ABI");
+
+    // The abi is composed of env and abi.
+    let abi = format!("{env}{abi}");
+
+    let (triplet, abi) = if abi.is_empty() {
+        (format!("{arch}-{sys}"), None)
+    } else {
+        (format!("{arch}-{sys}-{abi}"), Some(abi))
+    };
+
+    (triplet, arch, sys, abi)
 }
 
 fn translate_arch_feature(arch: &str, feature: &str) -> String {
