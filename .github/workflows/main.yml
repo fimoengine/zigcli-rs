@@ -45,6 +45,8 @@ jobs:
     name: Test Cross Compile - ${{ matrix.platform.target }}
     needs: [ test ]
     runs-on: ubuntu-latest
+    # Cross compilation with cross is broken at the moment.
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -75,7 +77,6 @@ jobs:
             test: false
     steps:
       - uses: actions/checkout@master
-      - uses: goto-bus-stop/setup-zig@v2
       - name: Install Rust
         run: |
           rustup update stable --no-self-update
@@ -146,7 +147,7 @@ jobs:
     needs:
       - clippy
       - test
-      - cross_compile_test
+      #      - cross_compile_test
       - ios_cross_compile_test
       - rustfmt
       - doc
