@@ -778,7 +778,25 @@ fn parse_target_triplet() -> (String, String, String, Option<String>) {
 fn translate_arch_feature(arch: &str, feature: &str) -> String {
     let feature = feature.replace("-", "_").replace(".", "_");
     match arch {
+        target if target.starts_with("aarch64") => translate_aarch64_target_feature(feature),
         target if target.starts_with("x86") => translate_x86_target_feature(feature),
+        _ => feature,
+    }
+}
+
+fn translate_aarch64_target_feature(feature: String) -> String {
+    match &*feature {
+        "dpb" => "ccpp".to_string(),
+        "dpb2" => "ccdp".to_string(),
+        "fcma" => "complxnum".to_string(),
+        "fhm" => "fp16fml".to_string(),
+        "flagm2" => "altnzcv".to_string(),
+        "fp16" => "fullfp16".to_string(),
+        "frintts" => "fptoint".to_string(),
+        "paca" => "pauth".to_string(),
+        "pacg" => "pauth_lr".to_string(),
+        "pmuv3" => "perfmon".to_string(),
+        "rcpc2" => "rcpc_immo".to_string(),
         _ => feature,
     }
 }
