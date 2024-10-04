@@ -483,7 +483,7 @@ impl Build {
 
         // Determine the target and CPU features, if not specified.
         if self.target.is_none() && self.cpu.is_none() {
-            let (target, arch, _, _) = parse_target_triplet();
+            let (target, arch) = translate_target_triple();
             self.target(target);
 
             let features = std::iter::once("baseline")
@@ -493,7 +493,7 @@ impl Build {
                 .join("+");
             self.cpu(features);
         } else if self.target.is_none() {
-            let (target, _, _, _) = parse_target_triplet();
+            let (target, _) = translate_target_triple();
             self.target(target);
         }
 
@@ -701,6 +701,7 @@ impl Build {
                 status
             ));
         }
+        println!("{status}");
 
         match &self.prefix {
             None => unreachable!(),
@@ -756,23 +757,86 @@ fn fail(s: &str) -> ! {
     panic!("\n{}\n\nbuild failed, must exit now", s)
 }
 
-fn parse_target_triplet() -> (String, String, String, Option<String>) {
+fn translate_target_triple() -> (&'static str, &'static str) {
     // Read the target from the environment variables.
-    let arch = getenv_unwrap("CARGO_CFG_TARGET_ARCH");
-    let sys = getenv_unwrap("CARGO_CFG_TARGET_OS");
-    let env = getenv_unwrap("CARGO_CFG_TARGET_ENV");
-    let abi = getenv_unwrap("CARGO_CFG_TARGET_ABI");
+    let target = getenv_unwrap("TARGET");
 
-    // The abi is composed of env and abi.
-    let abi = format!("{env}{abi}");
-
-    let (triplet, abi) = if abi.is_empty() {
-        (format!("{arch}-{sys}"), None)
-    } else {
-        (format!("{arch}-{sys}-{abi}"), Some(abi))
-    };
-
-    (triplet, arch, sys, abi)
+    match &*target {
+        "aarch64-apple-darwin" => ("aarch64-macos", "aarch64"),
+        "aarch64-apple-ios" => ("aarch64-ios", "aarch64"),
+        "aarch64-apple-ios-macabi" => ("aarch64-ios-macabi", "aarch64"),
+        "aarch64-apple-ios-sim" => ("aarch64-ios-simulator", "aarch64"),
+        "aarch64-apple-tvos" => ("aarch64-tvos", "aarch64"),
+        "aarch64-apple-tvos-sim" => ("aarch64-tvos-simulator", "aarch64"),
+        "aarch64-apple-visionos" => ("aarch64-visionos", "aarch64"),
+        "aarch64-apple-visionos-sim" => ("aarch64-visionos-simulator", "aarch64"),
+        "aarch64-apple-watchos" => ("aarch64-watchos", "aarch64"),
+        "aarch64-apple-watchos-sim" => ("aarch64-watchos-simulator", "aarch64"),
+        "aarch64-linux-android" => ("aarch64-linux-android", "aarch64"),
+        "aarch64-pc-windows-gnullvm" => ("aarch64-windows-gnu", "aarch64"),
+        "aarch64-pc-windows-msvc" => ("aarch64-windows-msvc", "aarch64"),
+        "aarch64-unknown-freebsd" => ("aarch64-freebsd", "aarch64"),
+        "aarch64-unknown-fuchsia" => ("aarch64-fuchsia", "aarch64"),
+        "aarch64-unknown-hermit" => ("aarch64-hermit", "aarch64"),
+        "aarch64-unknown-illumos" => ("aarch64-illumos", "aarch64"),
+        "aarch64-unknown-linux-gnu" => ("aarch64-linux-gnu", "aarch64"),
+        "aarch64-unknown-linux-gnu_ilp32" => ("aarch64-linux-gnuilp32", "aarch64"),
+        "aarch64-unknown-linux-musl" => ("aarch64-linux-musl", "aarch64"),
+        "aarch64-unknown-linux-ohos" => ("aarch64-linux-ohos", "aarch64"),
+        "aarch64-unknown-netbsd" => ("aarch64-netbsd", "aarch64"),
+        "aarch64-unknown-none" => ("aarch64-freestanding", "aarch64"),
+        "aarch64-unknown-openbsd" => ("aarch64-openbsd", "aarch64"),
+        "aarch64-unknown-uefi" => ("aarch64-uefi", "aarch64"),
+        "aarch64_be-unknown-linux-gnu" => ("aarch64_be-linux-gnu", "aarch64_be"),
+        "aarch64_be-unknown-linux-gnu_ilp32" => ("aarch64_be-linux-gnuilp32", "aarch64_be"),
+        "aarch64_be-unknown-netbsd" => ("aarch64_be-netbsd", "aarch64_be"),
+        "bpfeb-unknown-none" => ("bpfeb-freestanding", "bpfeb"),
+        "bpfel-unknown-none" => ("bpfel-freestanding", "bpfel"),
+        "i386-apple-ios" => ("x86-ios", "x86"),
+        "i686-apple-darwin" => ("x86-macos", "x86"),
+        "i686-linux-android" => ("x86-linux-android", "x86"),
+        "i686-pc-windows-gnu" => ("x86-windows-gnu", "x86"),
+        "i686-pc-windows-gnullvm" => ("x86-windows-gnu", "x86"),
+        "i686-pc-windows-msvc" => ("x86-windows-msvc", "x86"),
+        "i686-unknown-freebsd" => ("x86-freebsd", "x86"),
+        "i686-unknown-haiku" => ("x86-haiku", "x86"),
+        "i686-unknown-hurd-gnu" => ("x86-hurd-gnu", "x86"),
+        "i686-unknown-linux-gnu" => ("x86-linux-gnu", "x86"),
+        "i686-unknown-linux-musl" => ("x86-linux-musl", "x86"),
+        "i686-unknown-netbsd" => ("x86-netbsd", "x86"),
+        "i686-unknown-openbsd" => ("x86-openbsd", "x86"),
+        "i686-unknown-uefi" => ("x86-uefi", "x86"),
+        "loongarch64-unknown-linux-gnu" => ("loongarch64-linux-gnu", "loongarch64"),
+        "loongarch64-unknown-linux-musl" => ("loongarch64-linux-musl", "loongarch64"),
+        "loongarch64-unknown-linux-ohos" => ("loongarch64-linux-ohos", "loongarch64"),
+        "loongarch64-unknown-none" => ("loongarch64-freestanding", "loongarch64"),
+        "x86_64-apple-darwin" => ("x86_64-macos", "x86_64"),
+        "x86_64-apple-ios" => ("x86_64-ios", "x86_64"),
+        "x86_64-apple-ios-macabi" => ("x86_64-ios-macabi", "x86_64"),
+        "x86_64-apple-tvos" => ("x86_64-tvos", "x86_64"),
+        "x86_64-apple-watchos-sim" => ("x86_64-watchos-simulator", "x86_64"),
+        "x86_64-linux-android" => ("x86_64-linux-android", "x86_64"),
+        "x86_64-pc-solaris" => ("x86_64-solaris", "x86_64"),
+        "x86_64-pc-windows-gnu" => ("x86_64-windows-gnu", "x86_64"),
+        "x86_64-pc-windows-gnullvm" => ("x86_64-windows-gnu", "x86_64"),
+        "x86_64-pc-windows-msvc" => ("x86_64-windows-msvc", "x86_64"),
+        "x86_64-unknown-dragonfly" => ("x86_64-dragonfly", "x86_64"),
+        "x86_64-unknown-freebsd" => ("x86_64-freebsd", "x86_64"),
+        "x86_64-unknown-fuchsia" => ("x86_64-fuchsia", "x86_64"),
+        "x86_64-unknown-haiku" => ("x86_64-haiku", "x86_64"),
+        "x86_64-unknown-hermit" => ("x86_64-hermit", "x86_64"),
+        "x86_64-unknown-hurd-gnu" => ("x86_64-hurd-gnu", "x86_64"),
+        "x86_64-unknown-illumos" => ("x86_64-illumos", "x86_64"),
+        "x86_64-unknown-linux-gnu" => ("x86_64-linux-gnu", "x86_64"),
+        "x86_64-unknown-linux-gnux32" => ("x86_64-linux-gnux32", "x86_64"),
+        "x86_64-unknown-linux-musl" => ("x86_64-linux-musl", "x86_64"),
+        "x86_64-unknown-linux-none" => ("x86_64-linux-none", "x86_64"),
+        "x86_64-unknown-linux-ohos" => ("x86_64-linux-ohos", "x86_64"),
+        "x86_64-unknown-netbsd" => ("x86_64-netbsd", "x86_64"),
+        "x86_64-unknown-none" => ("x86_64-freestanding", "x86_64"),
+        "x86_64-unknown-uefi" => ("x86_64-uefi", "x86_64"),
+        _ => panic!("target not supported {target:?}"),
+    }
 }
 
 fn translate_arch_feature(arch: &str, feature: &str) -> String {
